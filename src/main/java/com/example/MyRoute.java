@@ -23,21 +23,16 @@ public class MyRoute extends RouteBuilder {
                 .to("amqp:queue:errorQueue")
                 .handled(true);
 
-       from("amqp:queue:inputQueue")
-               .doTry()
-                    .process(e -> {
-                        Integer header = (Integer) e.getIn().getHeader(Exchange.REDELIVERY_COUNTER);
-                        if(header==null || header <=2 ){
-                            throw new RuntimeException("122");
-                        } else {
-                            throw new RuntimeException("233");
-                        }
-                    })
-                .doCatch(Exception.class)
-                    .process(e -> {
-                        throw (RuntimeException)e.getProperty(Exchange.EXCEPTION_CAUGHT);
-                    })
-               .end()
+        from("amqp:queue:inputQueue")
+                .process(e -> {
+                    Integer header = (Integer) e.getIn().getHeader(Exchange.REDELIVERY_COUNTER);
+                    if (header == null || header <= 2) {
+                        throw new RuntimeException("122");
+                    } else {
+                        throw new RuntimeException("233");
+                    }
+                })
+                .end()
                 .log("Finally")
                 .to("amqp:queue:outputQueue");
 
